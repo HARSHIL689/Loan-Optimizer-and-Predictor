@@ -5,7 +5,6 @@ const Loan = require("../domain/Loan");
 const CashFlow = require("../domain/CashFlow");
 const { saveLoans } = require("../repositories/loan.repository");
 const { saveScenario } = require("../repositories/scenario.repository");
-
 const {
   validateLoans,
   validateNumber
@@ -14,37 +13,42 @@ const {
 class OptimizationController {
   async optimizeRepayment(req, res) {
     try {
-        const { loans, cashFlow, initialBalance } = req.body;
-    
-        validateLoans(loans);
-        validateNumber(initialBalance, "initialBalance");
-    
-        const loanObjects = loans.map(l => new Loan(l));
-    
-        const cashFlowObj = new CashFlow(cashFlow);
-    
-        const optimizer = new RepaymentOptimizerService();
-        const result = optimizer.runSimulation({
-          loans: loanObjects,
-          cashFlow: cashFlowObj,
-          initialBalance
-        });
-        await saveLoans(loanObjects);
-
-        const scenarioId = await saveScenario({
-            initialBalance,
-            totalInterest: result.totalInterestPaid,
-            months: result.months
-        });
-
-        res.json({
-            scenarioId,
-            ...result
-        });
-      } catch (err) {
-        res.status(400).json({ error: err.message });
-      }
+      console.log("RAW BODY:", req.body);
+      const { loans, cashFlow, initialBalance, name } = req.body;
+  
+      validateLoans(loans);
+      validateNumber(initialBalance, "initialBalance");
+  
+      const loanObjects = loans.map(l => new Loan(l));
+      const cashFlowObj = new CashFlow(cashFlow);
+  
+      const optimizer = new RepaymentOptimizerService();
+      const result = optimizer.runSimulation({
+        loans: loanObjects,
+        cashFlow: cashFlowObj,
+        initialBalance
+      });
+  
+      // await saveScenario({
+      //   name: name || "Untitled Repayment Scenario",
+      //   scenario_type: "repayment",
+      //   payload: {
+      //     loans,
+      //     cashFlow,
+      //     initialBalance
+      //   },
+      //   result_summary: {
+      //     months: result.months,
+      //     totalInterestPaid: Number(result.totalInterestPaid)
+      //   }
+      // });
+  
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
   }
+  
   async analyzeOpportunity(req, res) {
     try {
         const {
@@ -74,23 +78,20 @@ class OptimizationController {
   async optimizePrepaymentTiming(req, res) {
     try {
         const {
-          loans,
-          cashFlow,
+          annualRate,
           initialBalance,
           prepaymentAmount,
           searchMonths
         } = req.body;
     
-        validateLoans(loans);
+        validateNumber(initialBalance, "initialBalance");
+        validateNumber(annualRate, "annualRate");
         validateNumber(prepaymentAmount, "prepaymentAmount");
-    
-        const loanObjects = loans.map(l => new Loan(l));
-        const cashFlowObj = new CashFlow(cashFlow);
+        validateNumber(searchMonths, "searchMonths");
     
         const service = new PrepaymentTimingService();
         const result = service.optimize({
-          loans: loanObjects,
-          cashFlow: cashFlowObj,
+          annualRate,
           initialBalance,
           prepaymentAmount,
           searchMonths
