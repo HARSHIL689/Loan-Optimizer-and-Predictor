@@ -4,16 +4,18 @@ const PrepaymentTimingService = require("../services/prepaymentTiming.service");
 const Loan = require("../domain/Loan");
 const CashFlow = require("../domain/CashFlow");
 const { saveLoans } = require("../repositories/loan.repository");
-const { saveScenario } = require("../repositories/scenario.repository");
+const { createScenario } = require("../repositories/scenario.repository");
 const {
   validateLoans,
   validateNumber
 } = require("../validators/optimization.validator");
+const scenarioService = require("../services/scenarioService");
 
 class OptimizationController {
   async optimizeRepayment(req, res) {
     try {
-      console.log("RAW BODY:", req.body);
+      console.log("REQ.USER IN CONTROLLER:", req.user);
+
       const { loans, cashFlow, initialBalance, name } = req.body;
   
       validateLoans(loans);
@@ -28,20 +30,19 @@ class OptimizationController {
         cashFlow: cashFlowObj,
         initialBalance
       });
-  
-      // await saveScenario({
-      //   name: name || "Untitled Repayment Scenario",
-      //   scenario_type: "repayment",
-      //   payload: {
-      //     loans,
-      //     cashFlow,
-      //     initialBalance
-      //   },
-      //   result_summary: {
-      //     months: result.months,
-      //     totalInterestPaid: Number(result.totalInterestPaid)
-      //   }
-      // });
+      console.log("USER ID PASSED TO DB:", req.user?.id);
+
+      await scenarioService.saveScenario({
+        userId: req.user.id,
+        name: name || null,
+        scenarioType: "repayment",
+        inputData: {
+          loans,
+          cashFlow,
+          initialBalance
+        },
+        resultData: result
+      });
   
       res.json(result);
     } catch (err) {

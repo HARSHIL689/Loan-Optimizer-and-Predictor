@@ -1,28 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const optimizationController = require("../controllers/optimization.controller");
-const authMiddleware = require("../middlewares/authMiddleware");
 
-router.get("/health", (req, res) => {
-  res.json({ status: "OK" });
-});
+const optimizationRoutes = require("./optimization.routes");
 
-router.post(
-  "/optimize/repayment",
-  authMiddleware,
-  optimizationController.optimizeRepayment
-);
-
-router.post(
-  "/optimize/opportunity",
-  authMiddleware,
-  optimizationController.analyzeOpportunity
-);
-
-router.post(
-  "/optimize/prepayment-timing",
-  authMiddleware,
-  optimizationController.optimizePrepaymentTiming
-);
+router.use("/optimize", optimizationRoutes);
 
 module.exports = router;

@@ -16,11 +16,11 @@ async function saveScenario({ initialBalance, totalInterest, months }) {
 }
 
 async function createScenario({
-  userId,
+  user_id,
   name,
-  scenarioType,
-  inputData,
-  resultData,
+  scenario_type,
+  input_data,
+  result_data,
 }) {
   const res = await pool.query(
     `
@@ -28,7 +28,7 @@ async function createScenario({
     VALUES ($1, $2, $3, $4, $5)
     RETURNING id, name, scenario_type, created_at
     `,
-    [userId, name || null, scenarioType, inputData, resultData]
+    [user_id, name || null, scenario_type, input_data, result_data]
   );
   return res.rows[0];
 }

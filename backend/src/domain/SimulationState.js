@@ -9,6 +9,7 @@ class SimulationState {
 
   debit(amount) {
     if (!amount) {
+      // Defensive guard – do nothing if invalid
       return;
     }
 

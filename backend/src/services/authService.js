@@ -9,7 +9,7 @@ const { JWT_SECRET, JWT_EXPIRES_IN } = require("../config/jwt");
 const SALT_ROUNDS = 12;
 
 async function signup({ email, password }) {
-
+  
   const existingUser = await findUserByEmail(email);
   if (existingUser) {
     const error = new Error("User already exists");
