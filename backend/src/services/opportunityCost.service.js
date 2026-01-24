@@ -3,31 +3,24 @@ const { money } = require("../utils/money");
 class OpportunityCostService {
   analyze({
     extraAmount,
-    interestSaved,    
+    interestSaved,      
     investmentRate,     
     durationMonths
   }) {
     const principal = money(extraAmount);
 
-    //  Loan prepayment savings (SIMPLE interest approximation)
-    const loanRateAnnual = interestSaved / 100;
-    const loanInterestSaved = principal.mul(
-      loanRateAnnual * (durationMonths / 12)
-    );
-
-    //  Investment gain (COMPOUND monthly)
-    const monthlyInvestmentRate = investmentRate / 12 / 100;
+    const monthlyRate = investmentRate / 12 / 100;
 
     const futureValue = principal.mul(
-      money(1).plus(monthlyInvestmentRate).pow(durationMonths)
+      money(1).plus(monthlyRate).pow(durationMonths)
     );
 
     const investmentGain = futureValue.minus(principal);
 
-    // Net benefit
+    const loanInterestSaved = money(interestSaved);
+
     const netBenefit = investmentGain.minus(loanInterestSaved);
 
-    // Recommendation logic (with tolerance)
     let recommendation;
     if (netBenefit.abs().lt(100)) {
       recommendation = "EITHER";

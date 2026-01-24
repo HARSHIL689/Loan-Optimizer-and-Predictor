@@ -14,7 +14,6 @@ class PrepaymentTimingService {
     let bestMonth = 0;
     let maxInterestSaved = money(0);
 
-    // 1️ Baseline: no prepayment
     let baselineBalance = principal;
     let baselineInterest = money(0);
 
@@ -24,7 +23,6 @@ class PrepaymentTimingService {
       baselineBalance = baselineBalance.plus(interest);
     }
 
-    // 2️ Try prepayment at each month
     for (let prepayMonth = 1; prepayMonth <= searchMonths; prepayMonth++) {
       let balance = principal;
       let totalInterest = money(0);
@@ -34,7 +32,6 @@ class PrepaymentTimingService {
         totalInterest = totalInterest.plus(interest);
         balance = balance.plus(interest);
 
-        // Apply lump sum at selected month
         if (m === prepayMonth) {
           balance = balance.minus(lumpSum);
           if (balance.lt(0)) balance = money(0);
