@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+
 import AppLayout from "../layouts/AppLayout";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -20,7 +22,7 @@ export default function AppRouter() {
         <Route element={<ProtectedRoute />}>
 
           <Route path="/" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
           <Route path="/repayment" element={<Repayment />} />
           <Route path="/opportunity" element={<Opportunity />} />
           <Route path="/prepayment" element={<Prepayment />} />

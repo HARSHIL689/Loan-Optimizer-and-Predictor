@@ -25,7 +25,7 @@ export default function AppLayout() {
                 end={path === "/"}
                 className={({ isActive }) =>
                   isActive
-                    ? "text-brass/100 border-b-2 border-primary pb-1"
+                    ? "text-brass underline underline-offset-8 decoration-2 decoration-primary"
                     : "text-parchment/70 hover:text-parchment transition-colors"
                 }
               >
