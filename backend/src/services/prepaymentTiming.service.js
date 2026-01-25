@@ -5,53 +5,52 @@ class PrepaymentTimingService {
     initialBalance,
     annualRate,
     prepaymentAmount,
-    searchMonths = 24
+    investmentAnnualRate,
+    searchMonths,
+    monthlyPayment
   }) {
-    const monthlyRate = annualRate / 12 / 100;
-    const principal = money(initialBalance);
-    const lumpSum = money(prepaymentAmount);
-
-    let bestMonth = 0;
-    let maxInterestSaved = money(0);
-
-    let baselineBalance = principal;
-    let baselineInterest = money(0);
-
+    const loanRate = annualRate / 12 / 100;
+    const investRate = investmentAnnualRate / 12 / 100;
+  
+    let bestMonth = 1;
+    let maxNetGain = money(-Infinity);
+  
     for (let m = 1; m <= searchMonths; m++) {
-      const interest = baselineBalance.mul(monthlyRate);
-      baselineInterest = baselineInterest.plus(interest);
-      baselineBalance = baselineBalance.plus(interest);
-    }
-
-    for (let prepayMonth = 1; prepayMonth <= searchMonths; prepayMonth++) {
-      let balance = principal;
-      let totalInterest = money(0);
-
-      for (let m = 1; m <= searchMonths; m++) {
-        const interest = balance.mul(monthlyRate);
-        totalInterest = totalInterest.plus(interest);
-        balance = balance.plus(interest);
-
-        if (m === prepayMonth) {
-          balance = balance.minus(lumpSum);
-          if (balance.lt(0)) balance = money(0);
-        }
+      let balance = money(initialBalance);
+      let interestPaid = money(0);
+  
+      // 1️⃣ Simulate loan until month m (no prepayment)
+      for (let i = 1; i <= m; i++) {
+        const interest = balance.mul(loanRate);
+        interestPaid = interestPaid.plus(interest);
+        balance = balance.plus(interest).minus(monthlyPayment);
       }
-
-      const interestSaved = baselineInterest.minus(totalInterest);
-
-      if (interestSaved.gt(maxInterestSaved)) {
-        maxInterestSaved = interestSaved;
-        bestMonth = prepayMonth;
+  
+      // 2️⃣ Apply prepayment
+      balance = balance.minus(prepaymentAmount);
+      if (balance.lt(0)) balance = money(0);
+  
+      // 3️⃣ Investment growth of lump sum till month m
+      let invested = money(prepaymentAmount);
+      for (let i = 1; i <= m; i++) {
+        invested = invested.plus(invested.mul(investRate));
+      }
+  
+      const investmentGain = invested.minus(prepaymentAmount);
+      const netGain = investmentGain.minus(interestPaid);
+  
+      if (netGain.gt(maxNetGain)) {
+        maxNetGain = netGain;
+        bestMonth = m;
       }
     }
-
+  
     return {
       bestMonth,
-      maxInterestSaved: maxInterestSaved.toString(),
+      maxInterestSaved: maxNetGain.toString(),
       evaluatedMonths: searchMonths
     };
-  }
+  }  
 }
 
 module.exports = PrepaymentTimingService;

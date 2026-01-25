@@ -19,13 +19,26 @@ export default function PrepaymentPage() {
   const [alertMessage, setAlertMessage] = useState("");
 
   const result = scenario.prepaymentResult;
+  const isEmpty = v =>
+    v === undefined || v === null || v === "" || Number.isNaN(Number(v));  
 
   async function handleOptimize() {
+    console.log("PREPAYMENT STATE", scenario);
+    console.log({
+        initialBalance: isEmpty(scenario.initialBalance),
+        prepaymentAmount: isEmpty(scenario.prepaymentAmount),
+        searchMonths: isEmpty(scenario.searchMonths),
+        prepaymentAnnualRate: isEmpty(scenario.prepaymentAnnualRate),
+        investmentAnnualRate: isEmpty(scenario.investmentAnnualRate),
+        prepaymentMonthlyEmi: isEmpty(scenario.prepaymentMonthlyEmi),
+      });
     if (
-      !scenario.initialBalance ||
-      !scenario.prepaymentAmount ||
-      !scenario.searchMonths ||
-      !scenario.prepaymentAnnualRate
+      isEmpty(scenario.initialBalance) ||
+      isEmpty(scenario.prepaymentAmount) ||
+      isEmpty(scenario.searchMonths) ||
+      isEmpty(scenario.prepaymentAnnualRate) ||
+      isEmpty(scenario.investmentAnnualRate) ||
+      isEmpty(scenario.prepaymentMonthlyEmi)
     ) {
       setAlertMessage(
         "Please fill all fields before optimizing prepayment timing."
@@ -39,8 +52,10 @@ export default function PrepaymentPage() {
       const data = await optimizePrepaymentTiming({
         initialBalance: Number(scenario.initialBalance),
         annualRate: Number(scenario.prepaymentAnnualRate),
+        investmentAnnualRate: Number(scenario.investmentAnnualRate),
         prepaymentAmount: Number(scenario.prepaymentAmount),
-        searchMonths: Number(scenario.searchMonths)
+        searchMonths: Number(scenario.searchMonths),
+        monthlyPayment: Number(scenario.prepaymentMonthlyEmi),
       });
 
       setScenario(s => ({
@@ -82,6 +97,23 @@ export default function PrepaymentPage() {
             onChange={v =>
               setScenario(s => ({ ...s, initialBalance: v }))
             }
+          />
+
+          <InputField
+            label="Monthly EMI"
+            value={scenario.prepaymentMonthlyEmi}
+            onChange={v =>
+                setScenario(s => ({ ...s, prepaymentMonthlyEmi: v }))
+            }
+            />
+          
+          <InputField
+            label="Expected Investment Return (%)"
+            value={scenario.investmentAnnualRate}
+            onChange={v =>
+              setScenario(s => ({ ...s, investmentAnnualRate: v }))
+            }
+            step="0.01"
           />
 
           <InputField
@@ -138,7 +170,7 @@ export default function PrepaymentPage() {
                 value={`Month ${result.bestMonth}`}
               />
               <MetricCard
-                label="Interest Saved"
+                label="Net Financial Benefit"
                 value={`₹ ${formatNumber(result.maxInterestSaved, 2)}`}
               />
             </div>

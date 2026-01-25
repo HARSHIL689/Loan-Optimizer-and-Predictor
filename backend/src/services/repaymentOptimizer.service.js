@@ -46,8 +46,6 @@ class RepaymentOptimizerService {
         totalInterestPaid = totalInterestPaid.plus(interest);
       }
 
-      activeLoans.sort((a, b) => b.annualRate - a.annualRate);
-
       for (const loan of activeLoans) {
         const emi = Decimal.min(loan.minEmi, loan.remaining);
         state.debit(emi);
@@ -55,29 +53,39 @@ class RepaymentOptimizerService {
       }
 
       if (prepayment && prepayment.month === state.month) {
-        const targetLoan = activeLoans.find(l => l.remaining.gt(0));
+        const targetLoan = activeLoans
+          .filter(l => l.remaining.gt(0))
+          .sort((a, b) => b.annualRate - a.annualRate)[0];
+    
         if (targetLoan) {
-          const amount = Decimal.min(
-            money(prepayment.amount),
-            targetLoan.remaining
-          );
-          state.debit(amount);
-          targetLoan.remaining = targetLoan.remaining.minus(amount);
+          const available = state.balance.minus(cashFlow.safeBalance);
+          if (available.gt(0)) {
+            const amount = Decimal.min(
+              money(prepayment.amount),
+              available,
+              targetLoan.remaining
+            );
+            state.debit(amount);
+            targetLoan.remaining = targetLoan.remaining.minus(amount);
+          }
         }
       }
 
-      let extra = monthlySurplus.minus(
-        activeLoans.reduce((sum, l) => sum.plus(l.minEmi), money(0))
-      );
+      let availableForPrepay = state.balance.minus(cashFlow.safeBalance);
 
-      for (const loan of activeLoans) {
-        if (extra.lte(0)) break;
-        if (loan.remaining.lte(0)) continue;
-
-        const payment = Decimal.min(extra, loan.remaining);
-        state.debit(payment);
-        loan.remaining = loan.remaining.minus(payment);
-        extra = extra.minus(payment);
+      if (availableForPrepay.gt(0)) {
+        const targetLoan = activeLoans
+          .filter(l => l.remaining.gt(0))
+          .sort((a, b) => b.annualRate - a.annualRate)[0];
+    
+        if (targetLoan) {
+          const payment = Decimal.min(
+            availableForPrepay,
+            targetLoan.remaining
+          );
+          state.debit(payment);
+          targetLoan.remaining = targetLoan.remaining.minus(payment);
+        }
       }
 
       for (const loan of activeLoans) {
@@ -95,9 +103,9 @@ class RepaymentOptimizerService {
           remaining: l.remaining.toString()
         }))
       });
-
+    
       state.month++;
-    }
+    }    
 
     if (state.month >= maxMonths) {
       throw new Error("Repayment did not converge within max months");

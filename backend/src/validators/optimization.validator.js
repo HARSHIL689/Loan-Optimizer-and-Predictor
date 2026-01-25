@@ -6,10 +6,19 @@ function validateLoans(loans) {
 
 function validateNumber(value, name) {
   const num = Number(value);
-  if (!Number.isFinite(num) || num <= 0) {
+
+  if (value === undefined || value === null || value === "") {
+    throw new Error(`${name} is required`);
+  }
+
+  if (Number.isNaN(num)) {
+    throw new Error(`${name} must be a number`);
+  }
+
+  if (num <= 0) {
     throw new Error(`${name} must be a positive number`);
   }
-}  
+}
 
 module.exports = {
   validateLoans,

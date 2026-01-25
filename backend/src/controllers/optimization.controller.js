@@ -82,12 +82,16 @@ class OptimizationController {
           annualRate,
           initialBalance,
           prepaymentAmount,
+          investmentAnnualRate,
+          monthlyPayment,
           searchMonths
         } = req.body;
     
         validateNumber(initialBalance, "initialBalance");
         validateNumber(annualRate, "annualRate");
         validateNumber(prepaymentAmount, "prepaymentAmount");
+        validateNumber(investmentAnnualRate, "investmentAnnualRate");
+        validateNumber(monthlyPayment, "monthlyPayment");
         validateNumber(searchMonths, "searchMonths");
     
         const service = new PrepaymentTimingService();
@@ -95,6 +99,8 @@ class OptimizationController {
           annualRate,
           initialBalance,
           prepaymentAmount,
+          investmentAnnualRate,
+          monthlyPayment,
           searchMonths
         });
     

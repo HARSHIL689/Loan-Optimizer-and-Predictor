@@ -13,6 +13,8 @@ export function ScenarioProvider({ children }) {
     initialBalance: "",
     cashFlow: { monthlyIncome: "", monthlyExpenses: "", safeBalance: "" },
     loans: [],
+    investmentAnnualRate: "",
+    prepaymentMonthlyEmi: "",
     extraAmount: "",
     interestSaved: "",
     investmentRate: "",
@@ -36,6 +38,8 @@ export function ScenarioProvider({ children }) {
         safeBalance: ""
       },
       loans: [],
+      investmentAnnualRate: "",
+      prepaymentMonthlyEmi: "",
       extraAmount: "",
       interestSaved: "",
       investmentRate: "",
@@ -49,10 +53,6 @@ export function ScenarioProvider({ children }) {
     });
   }
 
-  /**
-   * Save scenario WITHOUT name.
-   * Scenario will be identified later by number (order / id).
-   */
   async function saveCurrentScenario({ scenarioType }) {
     if (!scenarioType) {
       throw new Error("scenarioType is required");
@@ -62,6 +62,8 @@ export function ScenarioProvider({ children }) {
       initialBalance: scenario.initialBalance,
       cashFlow: scenario.cashFlow,
       loans: scenario.loans,
+      investmentAnnualRate: scenario.investmentAnnualRate,
+      prepaymentMonthlyEmi: scenario.prepaymentMonthlyEmi,
       extraAmount: scenario.extraAmount,
       interestSaved: scenario.interestSaved,
       investmentRate: scenario.investmentRate,
@@ -108,6 +110,8 @@ export function ScenarioProvider({ children }) {
         safeBalance: ""
       },
       loans: saved.input_data.loans ?? [],
+      investmentAnnualRate: saved.input_data.investmentAnnualRate ?? "",
+      prepaymentMonthlyEmi: saved.input_data.prepaymentMonthlyEmi ?? "",
       extraAmount: saved.input_data.extraAmount ?? "",
       interestSaved: saved.input_data.interestSaved ?? "",
       investmentRate: saved.input_data.investmentRate ?? "",

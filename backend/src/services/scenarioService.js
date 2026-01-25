@@ -7,23 +7,21 @@ const {
 
 async function saveScenario({
   userId,
-  name,
   scenarioType,
   inputData,
-  resultData,
+  resultData
 }) {
-  if (!scenarioType || !inputData || !resultData) {
+  if (!userId || !scenarioType || !inputData || !resultData) {
     const err = new Error("Missing required scenario fields");
     err.statusCode = 400;
     throw err;
   }
 
   return createScenario({
-    user_id: userId,                // ✅ FIX
-    name: name || null,
-    scenario_type: scenarioType,    // ✅ FIX
-    input_data: inputData,          // ✅ FIX
-    result_data: resultData 
+    userId,
+    scenarioType,
+    inputData,
+    resultData
   });
 }
 
