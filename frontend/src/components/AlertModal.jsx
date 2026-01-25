@@ -12,7 +12,6 @@ export default function AlertModal({ message, onClose }) {
             p-6
           "
         >
-          {/* Arcane seal */}
           <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-transparent via-arcane/80 to-transparent" />
   
           <h3 className="text-xl font-extrabold tracking-widest uppercase text-brass mb-3">

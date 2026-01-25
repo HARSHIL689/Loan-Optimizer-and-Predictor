@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
-const API_BASE = "http://localhost:3000"; // backend port
+const API_BASE = "http://localhost:3000";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -54,7 +54,6 @@ export function AuthProvider({ children }) {
       throw new Error(data.message || "Signup failed");
     }
 
-    // auto-login after signup
     await signIn(email, password);
   }
 
