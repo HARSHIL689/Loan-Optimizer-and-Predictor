@@ -9,7 +9,6 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-abyss via-stone to-abyss text-ash">
-      {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-midnight/95 backdrop-blur border-b border-brass/100 shadow-lg">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8 text-sm font-semibold tracking-wide">
@@ -47,7 +46,6 @@ export default function AppLayout() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <main className="min-h-[calc(100vh-4rem)] flex items-start justify-center px-6 py-12">
         <div className="w-full max-w-7xl rounded-3xl bg-parchment border border-brass/40 shadow-2xl p-6 mt-12">
           <Outlet />

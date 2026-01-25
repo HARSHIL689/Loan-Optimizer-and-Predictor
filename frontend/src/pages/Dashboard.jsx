@@ -20,10 +20,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-12">
-      {/* Header */}
       <div className="border-b border-brass/40 pb-6">
         <h1 className="text-4xl font-extrabold tracking-wide text-ink">
-          Loan Intelligence Dashboard
+          Loan Intelligence and Prepayment Optimizer
         </h1>
         <p className="mt-3 text-ink/70 max-w-3xl">
           Make optimal loan repayment and prepayment decisions using
@@ -31,7 +30,6 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Action cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card title="Repayment Optimizer">
           <p className="mb-5 text-ink/80 leading-relaxed">
@@ -72,7 +70,6 @@ export default function Dashboard() {
           </button>
         </Card>
 
-        {/* Saved Scenarios */}
         <Card title="Saved Scenarios">
           <p className="mb-5 text-ink/80 leading-relaxed">
             Reload previously saved simulations and continue analysis.
