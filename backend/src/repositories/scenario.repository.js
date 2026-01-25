@@ -1,55 +1,51 @@
-const { Decimal } = require("../utils/money");
 const pool = require("../config/db");
 
-async function saveScenario({ initialBalance, totalInterest, months }) {
-  const result = await pool.query(
-    `
-    INSERT INTO optimization_scenarios
-      (initial_balance, total_interest, months)
-    VALUES ($1, $2, $3)
-    RETURNING id
-    `,
-    [initialBalance, new Decimal(totalInterest).toNumber(), months]
-  );
-
-  return result.rows[0].id;
-}
-
+/**
+ * Create a new scenario (no name).
+ */
 async function createScenario({
-  user_id,
-  name,
-  scenario_type,
-  input_data,
-  result_data,
+  userId,
+  scenarioType,
+  inputData,
+  resultData
 }) {
   const res = await pool.query(
     `
-    INSERT INTO scenarios (user_id, name, scenario_type, input_data, result_data)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id, name, scenario_type, created_at
+    INSERT INTO scenarios (user_id, scenario_type, input_data, result_data)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, scenario_type, created_at
     `,
-    [user_id, name || null, scenario_type, input_data, result_data]
+    [userId, scenarioType, inputData, resultData]
   );
+
   return res.rows[0];
 }
 
+/**
+ * List all scenarios for a user.
+ * Ordering is used later to derive Scenario #1, #2, ...
+ */
 async function listScenariosByUser(userId) {
   const res = await pool.query(
     `
-    SELECT id, name, scenario_type, created_at
+    SELECT id, scenario_type, created_at
     FROM scenarios
     WHERE user_id = $1
-    ORDER BY created_at DESC
+    ORDER BY created_at ASC
     `,
     [userId]
   );
+
   return res.rows;
 }
 
+/**
+ * Load a single scenario by id.
+ */
 async function getScenarioById(id, userId) {
   const res = await pool.query(
     `
-    SELECT id, name, scenario_type, input_data, result_data
+    SELECT id, scenario_type, input_data, result_data, created_at
     FROM scenarios
     WHERE id = $1 AND user_id = $2
     `,
@@ -59,6 +55,9 @@ async function getScenarioById(id, userId) {
   return res.rows[0];
 }
 
+/**
+ * Delete a scenario.
+ */
 async function deleteScenarioById(id, userId) {
   const res = await pool.query(
     `
@@ -73,7 +72,6 @@ async function deleteScenarioById(id, userId) {
 }
 
 module.exports = {
-  saveScenario,
   createScenario,
   listScenariosByUser,
   getScenarioById,
