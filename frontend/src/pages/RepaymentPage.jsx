@@ -8,7 +8,6 @@ import ResultCard from "../components/ResultCard";
 import SafetyIndicator from "../components/SafetyIndicator";
 import Card from "../components/Card";
 import AlertModal from "../components/AlertModal";
-import { saveScenario } from "../api/scenario.api";
 
 function computeSafety(result, safeBalance) {
   if (!result) return null;
@@ -25,9 +24,16 @@ function computeSafety(result, safeBalance) {
 }
 
 export default function RepaymentPage() {
-  const { scenario, setScenario, resetScenario } = useScenario();
+  const {
+    scenario,
+    setScenario,
+    resetScenario,
+    saveCurrentScenario
+  } = useScenario();
+
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
+
   const result = scenario.repaymentResult;
 
   async function handleRun() {
@@ -41,7 +47,6 @@ export default function RepaymentPage() {
       setAlertMessage("Please fill all fields before running optimization.");
       return;
     }
-    setLoading(true);
 
     for (const loan of scenario.loans) {
       if (!loan.principal || !loan.annualRate || !loan.minEmi) {
@@ -50,58 +55,48 @@ export default function RepaymentPage() {
       }
     }
 
-    const data = await optimizeRepayment({
-      loans: scenario.loans.map(l => ({
-        id: l.id,
-        principal: Number(l.principal),
-        annualRate: Number(l.annualRate),
-        minEmi: Number(l.minEmi)
-      })),
-      cashFlow: {
-        monthlyIncome: Number(scenario.cashFlow.monthlyIncome),
-        monthlyExpenses: Number(scenario.cashFlow.monthlyExpenses),
-        safeBalance: Number(scenario.cashFlow.safeBalance)
-      },
-      name: scenario.scenarioName,
-      initialBalance: Number(scenario.initialBalance),
-    });
+    setLoading(true);
 
-    setScenario(prev => ({
-      ...prev,
-      repaymentResult: data
-    }));
+    try {
+      const data = await optimizeRepayment({
+        loans: scenario.loans.map(l => ({
+          id: l.id,
+          principal: Number(l.principal),
+          annualRate: Number(l.annualRate),
+          minEmi: Number(l.minEmi)
+        })),
+        cashFlow: {
+          monthlyIncome: Number(scenario.cashFlow.monthlyIncome),
+          monthlyExpenses: Number(scenario.cashFlow.monthlyExpenses),
+          safeBalance: Number(scenario.cashFlow.safeBalance)
+        },
+        initialBalance: Number(scenario.initialBalance)
+      });
 
-    setLoading(false);
+      setScenario(prev => ({
+        ...prev,
+        repaymentResult: data
+      }));
+    } catch (err) {
+      setAlertMessage(err.message || "Failed to run optimization.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  // async function handleSaveScenario() {
-  //   if (!result) {
-  //     alert("Run the optimizer before saving.");
-  //     return;
-  //   }
-  
-  //   if (!scenario.scenarioName?.trim()) {
-  //     alert("Please enter a scenario name.");
-  //     return;
-  //   }
-  
-  //   try {
-  //     await saveScenario({
-  //       name: scenario.scenarioName,
-  //       scenarioType: "repayment",
-  //       inputData: {
-  //         loans: scenario.loans,
-  //         cashFlow: scenario.cashFlow,
-  //         initialBalance: scenario.initialBalance
-  //       },
-  //       resultData: result
-  //     });
-  
-  //     alert("Scenario saved successfully.");
-  //   } catch (err) {
-  //     alert(err.message || "Failed to save scenario.");
-  //   }
-  // }
+  async function handleSaveScenario() {
+    if (!result) {
+      setAlertMessage("Run the optimizer before saving.");
+      return;
+    }
+
+    try {
+      await saveCurrentScenario({ scenarioType: "repayment" });
+      setAlertMessage("Scenario saved successfully.");
+    } catch (err) {
+      setAlertMessage(err.message || "Failed to save scenario.");
+    }
+  }
 
   const safety = result
     ? computeSafety(result, scenario.cashFlow.safeBalance)
@@ -144,30 +139,17 @@ export default function RepaymentPage() {
               ...s,
               loans: [
                 ...s.loans,
-                { id: `L${s.loans.length + 1}`, principal: "", annualRate: "", minEmi: "" }
+                {
+                  id: `L${s.loans.length + 1}`,
+                  principal: "",
+                  annualRate: "",
+                  minEmi: ""
+                }
               ]
             }))
           }
         />
       </Card>
-
-      {/* <div className="flex flex-col gap-1 max-w-md">
-        <label className="text-sm font-semibold text-ink/80">
-          Scenario Name
-        </label>
-        <input
-          type="text"
-          value={scenario.scenarioName}
-          onChange={e =>
-            setScenario(s => ({
-              ...s,
-              scenarioName: e.target.value
-            }))
-          }
-          placeholder="e.g. Debt Avalanche – Jan"
-          className="rounded-xl border border-brass/40 bg-parchment px-4 py-2.5 text-ink shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-        />
-      </div> */}
 
       <div className="flex flex-wrap items-center gap-4">
         <button
@@ -189,12 +171,13 @@ export default function RepaymentPage() {
 
       <ResultCard result={result} />
 
-      {/* <button
+      <button
         onClick={handleSaveScenario}
-        className="wizard-secondary-btn w-full mt-4"
+        disabled={!result}
+        className="bg-primary text-white w-full px-6 py-3 rounded-xl font-semibold shadow-lg hover:brightness-110 active:scale-[0.97] transition disabled:opacity-50"
       >
         Save Scenario
-      </button> */}
+      </button>
 
       <SafetyIndicator
         safety={safety}

@@ -59,7 +59,7 @@ export default function Dashboard() {
           </button>
         </Card>
 
-        <Card title="Prepayment Timing Optimizer" >
+        <Card title="Prepayment Timing Optimizer">
           <p className="mb-5 text-ink/80 leading-relaxed">
             Find the best month to make a lump-sum prepayment to maximize
             interest savings.
@@ -72,7 +72,8 @@ export default function Dashboard() {
           </button>
         </Card>
 
-        {/* <Card title="Saved Scenarios">
+        {/* Saved Scenarios */}
+        <Card title="Saved Scenarios">
           <p className="mb-5 text-ink/80 leading-relaxed">
             Reload previously saved simulations and continue analysis.
           </p>
@@ -84,7 +85,7 @@ export default function Dashboard() {
               }
               setShowSavedScenarios(prev => !prev);
             }}
-            className="bg-brass text-midnight px-5 py-2.5 rounded-xl font-semibold shadow-md hover:brightness-105 transition"
+            className="bg-primary text-white px-5 py-2.5 rounded-xl font-medium shadow-md hover:brightness-110 active:scale-[0.97] transition"
           >
             {showSavedScenarios ? "Hide Scenarios" : "Load Saved Scenarios"}
           </button>
@@ -96,13 +97,15 @@ export default function Dashboard() {
                   No saved scenarios yet.
                 </p>
               ) : (
-                savedScenarios.map(s => (
+                savedScenarios.map((s, index) => (
                   <div
                     key={s.id}
                     className="flex items-center justify-between rounded-xl border border-brass/40 bg-parchment px-4 py-3 shadow-sm"
                   >
                     <div>
-                      <p className="font-semibold text-ink">{s.name}</p>
+                      <p className="font-semibold text-ink">
+                        Scenario #{index + 1}
+                      </p>
                       <p className="text-sm text-ink/60">
                         {s.scenario_type} •{" "}
                         {new Date(s.created_at).toLocaleDateString()}
@@ -142,7 +145,7 @@ export default function Dashboard() {
               )}
             </div>
           )}
-        </Card> */}
+        </Card>
       </div>
     </div>
   );

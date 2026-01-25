@@ -8,7 +8,13 @@ import { useScenario } from "../context/ScenarioContext";
 import AlertModal from "../components/AlertModal";
 
 export default function OpportunityPage() {
-  const { scenario, setScenario, resetScenario } = useScenario();
+  const {
+    scenario,
+    setScenario,
+    resetScenario,
+    saveCurrentScenario
+  } = useScenario();
+
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
@@ -27,19 +33,37 @@ export default function OpportunityPage() {
 
     setLoading(true);
 
-    const data = await analyzeOpportunity({
-      extraAmount: Number(scenario.extraAmount),
-      interestSaved: Number(scenario.interestSaved),
-      investmentRate: Number(scenario.investmentRate),
-      durationMonths: Number(scenario.durationMonths)
-    });
+    try {
+      const data = await analyzeOpportunity({
+        extraAmount: Number(scenario.extraAmount),
+        interestSaved: Number(scenario.interestSaved),
+        investmentRate: Number(scenario.investmentRate),
+        durationMonths: Number(scenario.durationMonths)
+      });
 
-    setScenario(s => ({
-      ...s,
-      opportunityResult: data
-    }));
+      setScenario(s => ({
+        ...s,
+        opportunityResult: data
+      }));
+    } catch (err) {
+      setAlertMessage(err.message || "Failed to analyze opportunity.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    setLoading(false);
+  async function handleSaveScenario() {
+    if (!result) {
+      setAlertMessage("Run the analysis before saving.");
+      return;
+    }
+
+    try {
+      await saveCurrentScenario({ scenarioType: "opportunity" });
+      setAlertMessage("Scenario saved successfully.");
+    } catch (err) {
+      setAlertMessage(err.message || "Failed to save scenario.");
+    }
   }
 
   return (
@@ -96,19 +120,28 @@ export default function OpportunityPage() {
       </div>
 
       {result && (
-        <Card title="Council Verdict">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <MetricCard
-              label="Investment Gain"
-              value={`₹ ${formatNumber(result.investmentGain, 2)}`}
-            />
-            <MetricCard
-              label="Net Financial Impact"
-              value={`₹ ${formatNumber(result.netBenefit, 2)}`}
-              subtext={result.recommendation}
-            />
-          </div>
-        </Card>
+        <>
+          <Card title="Council Verdict">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <MetricCard
+                label="Investment Gain"
+                value={`₹ ${formatNumber(result.investmentGain, 2)}`}
+              />
+              <MetricCard
+                label="Net Financial Impact"
+                value={`₹ ${formatNumber(result.netBenefit, 2)}`}
+                subtext={result.recommendation}
+              />
+            </div>
+          </Card>
+
+          <button
+            onClick={handleSaveScenario}
+            className="bg-primary text-white w-full px-6 py-3 rounded-xl font-semibold shadow-lg hover:brightness-110 active:scale-[0.97] transition"
+          >
+            Save Scenario
+          </button>
+        </>
       )}
 
       <AlertModal

@@ -42,10 +42,9 @@ export function listScenarios() {
 }
 
 export function loadScenario(id) {
-    return request("GET", `/scenarios/${id}`);
+  return request("GET", `/scenarios/${id}`);
 }
 
 export function deleteScenario(id) {
-    return request("DELETE", `/scenarios/${id}`);
+  return request("DELETE", `/scenarios/${id}`);
 }
-  

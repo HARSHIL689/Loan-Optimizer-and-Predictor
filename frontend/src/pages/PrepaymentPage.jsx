@@ -8,7 +8,13 @@ import { useScenario } from "../context/ScenarioContext";
 import AlertModal from "../components/AlertModal";
 
 export default function PrepaymentPage() {
-  const { scenario, setScenario, resetScenario } = useScenario();
+  const {
+    scenario,
+    setScenario,
+    resetScenario,
+    saveCurrentScenario
+  } = useScenario();
+
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
 
@@ -29,19 +35,37 @@ export default function PrepaymentPage() {
 
     setLoading(true);
 
-    const data = await optimizePrepaymentTiming({
-      initialBalance: Number(scenario.initialBalance),
-      annualRate: Number(scenario.prepaymentAnnualRate),
-      prepaymentAmount: Number(scenario.prepaymentAmount),
-      searchMonths: Number(scenario.searchMonths)
-    });
+    try {
+      const data = await optimizePrepaymentTiming({
+        initialBalance: Number(scenario.initialBalance),
+        annualRate: Number(scenario.prepaymentAnnualRate),
+        prepaymentAmount: Number(scenario.prepaymentAmount),
+        searchMonths: Number(scenario.searchMonths)
+      });
 
-    setScenario(s => ({
-      ...s,
-      prepaymentResult: data
-    }));
+      setScenario(s => ({
+        ...s,
+        prepaymentResult: data
+      }));
+    } catch (err) {
+      setAlertMessage(err.message || "Failed to optimize prepayment timing.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    setLoading(false);
+  async function handleSaveScenario() {
+    if (!result) {
+      setAlertMessage("Run the optimization before saving.");
+      return;
+    }
+
+    try {
+      await saveCurrentScenario({ scenarioType: "prepayment" });
+      setAlertMessage("Scenario saved successfully.");
+    } catch (err) {
+      setAlertMessage(err.message || "Failed to save scenario.");
+    }
   }
 
   return (
@@ -66,6 +90,7 @@ export default function PrepaymentPage() {
             onChange={v =>
               setScenario(s => ({ ...s, prepaymentAnnualRate: v }))
             }
+            step="0.01"
           />
 
           <InputField
@@ -105,18 +130,27 @@ export default function PrepaymentPage() {
       </div>
 
       {result && (
-        <Card title="Divination Result">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <MetricCard
-              label="Best Month"
-              value={`Month ${result.bestMonth}`}
-            />
-            <MetricCard
-              label="Interest Saved"
-              value={`₹ ${formatNumber(result.maxInterestSaved, 2)}`}
-            />
-          </div>
-        </Card>
+        <>
+          <Card title="Divination Result">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <MetricCard
+                label="Best Month"
+                value={`Month ${result.bestMonth}`}
+              />
+              <MetricCard
+                label="Interest Saved"
+                value={`₹ ${formatNumber(result.maxInterestSaved, 2)}`}
+              />
+            </div>
+          </Card>
+
+          <button
+            onClick={handleSaveScenario}
+            className="bg-primary text-white w-full px-6 py-3 rounded-xl font-semibold shadow-lg hover:brightness-110 active:scale-[0.97] transition"
+          >
+            Save Scenario
+          </button>
+        </>
       )}
 
       <AlertModal
