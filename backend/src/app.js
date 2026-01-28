@@ -6,7 +6,23 @@ const app = express();
 const scenarioRoutes = require("./routes/scenarioRoutes")
 
 app.use(express.json());
-app.use(cors());
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://loan-optimizer-and-predictor.netlify.app"
+  ];
+  
+  app.use(
+    cors({
+      origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        callback(new Error("Not allowed by CORS"));
+      },
+      credentials: true
+    })
+);
 app.use("/api/auth", authRoutes);
 app.use("/api", apiRoutes);
 app.use("/api/scenarios",scenarioRoutes)
