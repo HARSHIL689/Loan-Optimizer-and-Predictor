@@ -1,7 +1,7 @@
-const pool = require("../config/db");
+const db = require("../config/db");
 
 async function saveLoans(loans) {
-  const client = await pool.connect();
+  const client = await db.getClient();
   try {
     await client.query("BEGIN");
 

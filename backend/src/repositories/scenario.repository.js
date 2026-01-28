@@ -1,4 +1,4 @@
-const pool = require("../config/db");
+const db = require("../config/db");
 
 /**
  * Create a new scenario (no name).
@@ -9,7 +9,7 @@ async function createScenario({
   inputData,
   resultData
 }) {
-  const res = await pool.query(
+  const res = await db.query(
     `
     INSERT INTO scenarios (user_id, scenario_type, input_data, result_data)
     VALUES ($1, $2, $3, $4)
@@ -26,7 +26,7 @@ async function createScenario({
  * Ordering is used later to derive Scenario #1, #2, ...
  */
 async function listScenariosByUser(userId) {
-  const res = await pool.query(
+  const res = await db.query(
     `
     SELECT id, scenario_type, created_at
     FROM scenarios
@@ -43,7 +43,7 @@ async function listScenariosByUser(userId) {
  * Load a single scenario by id.
  */
 async function getScenarioById(id, userId) {
-  const res = await pool.query(
+  const res = await db.query(
     `
     SELECT id, scenario_type, input_data, result_data, created_at
     FROM scenarios
@@ -59,7 +59,7 @@ async function getScenarioById(id, userId) {
  * Delete a scenario.
  */
 async function deleteScenarioById(id, userId) {
-  const res = await pool.query(
+  const res = await db.query(
     `
     DELETE FROM scenarios
     WHERE id = $1 AND user_id = $2
