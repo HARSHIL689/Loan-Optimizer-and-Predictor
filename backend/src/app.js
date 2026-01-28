@@ -10,5 +10,13 @@ app.use(cors());
 app.use("/api/auth", authRoutes);
 app.use("/api", apiRoutes);
 app.use("/api/scenarios",scenarioRoutes)
+app.get("/api/health", (req, res) => {
+    res.status(200).json({
+      status: "ok",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    });
+});
+  
 
 module.exports = app;
